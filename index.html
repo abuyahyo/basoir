@@ -305,13 +305,26 @@ function applyFilters(){
   render();
 }
 function render(){
+  var grid=document.getElementById('grid');
+  var cnt=document.getElementById('cnt');
+  var empty=document.getElementById('emptyState');
+  var isHome = activeBabIdx===null && !searchQuery;
+  if(isHome){
+    grid.style.display='none';
+    cnt.style.display='none';
+    empty.style.display='none';
+    grid.innerHTML='';
+    return;
+  }
+  grid.style.display='';
+  cnt.style.display='';
   var h='';
   filtered.forEach(function(q,i){
     h+='<div class="card" onclick="show('+i+')"><div class="cbab">'+BABS[q.babIdx]+'</div><div class="cnum">السؤال '+q.num+'</div><div class="ctitle">'+q.title+'</div><div class="carr">←</div></div>';
   });
-  document.getElementById('grid').innerHTML=h;
-  document.getElementById('cnt').innerText=filtered.length+' موضوع';
-  document.getElementById('emptyState').style.display=filtered.length===0?'block':'none';
+  grid.innerHTML=h;
+  cnt.innerText=filtered.length+' موضوع';
+  empty.style.display=filtered.length===0?'block':'none';
   setTimeout(function(){
     var cards=document.querySelectorAll('.card');
     cards.forEach(function(c,i){setTimeout(function(){c.classList.add('vis')},i*30)});
