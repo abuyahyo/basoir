@@ -49,9 +49,12 @@ body.light-theme .logo{animation:glow-light 5s ease-in-out infinite}
 .sub{font-size:14px;color:var(--muted);margin-top:14px;position:relative;z-index:1;line-height:1.65}
 .author{display:inline-block;margin-top:12px;font-size:15px;font-weight:600;color:var(--gold);position:relative;z-index:1;letter-spacing:.04em}
 .controls{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:28px 20px 20px}
-.bab-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px;justify-content:center}
-.btab{padding:6px 14px;background:transparent;border:1px solid var(--border);border-radius:4px;color:var(--muted);font-family:"Noto Naskh Arabic",serif;font-size:11.5px;cursor:pointer;transition:all .2s;white-space:nowrap}
-.btab:hover,.btab.on{border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,.06)}
+.bab-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:18px auto 24px;max-width:900px;padding:0 12px}
+.btab{padding:18px 18px;background:var(--surf);border:1px solid var(--border);border-radius:8px;color:var(--txt);font-family:"Noto Naskh Arabic",serif;font-size:14px;font-weight:600;cursor:pointer;transition:background .25s,border-color .25s,color .2s,box-shadow .25s,transform .2s;text-align:center;position:relative;overflow:hidden;line-height:1.5;min-height:64px;display:flex;align-items:center;justify-content:center}
+.btab::after{content:"";position:absolute;top:0;right:0;width:3px;height:0;background:var(--gold);transition:height .28s;border-radius:0 8px 0 0}
+.btab:hover,.btab.on{border-color:rgba(201,168,76,.32);background:var(--surf2);color:var(--gold);box-shadow:var(--sh)}
+.btab:hover::after,.btab.on::after{height:100%}
+@media(max-width:580px){.bab-row{grid-template-columns:repeat(2,1fr);gap:8px}.btab{padding:14px 12px;font-size:13px;min-height:56px}}
 
 
 .cnt{text-align:center;font-size:11px;color:var(--muted);margin-top:10px;letter-spacing:.06em}
