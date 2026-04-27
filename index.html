@@ -176,8 +176,15 @@ footer{position:relative;z-index:1;text-align:center;padding:20px;border-top:1px
       <button class="search-clear" id="searchClear" onclick="clearSearch()">✕</button>
     </div>
     <div class="bab-row" id="brow"></div>
-    <div class="cnt" id="cnt"></div>
   </div>
+</div>
+
+<div id="listView" style="display:none;position:relative;z-index:1">
+  <div class="ahdr">
+    <button class="back" onclick="closeList()">&#8592; العودة إلى القائمة</button>
+    <h2 class="atitle" id="listTitle"></h2>
+  </div>
+  <div class="cnt" id="cnt"></div>
   <div class="grid" id="grid"></div>
   <div class="empty-state" id="emptyState" style="display:none">
     <div class="empty-icon">📚</div>
@@ -305,19 +312,24 @@ function applyFilters(){
   render();
 }
 function render(){
+  var home=document.getElementById('home');
+  var list=document.getElementById('listView');
   var grid=document.getElementById('grid');
   var cnt=document.getElementById('cnt');
   var empty=document.getElementById('emptyState');
   var isHome = activeBabIdx===null && !searchQuery;
   if(isHome){
-    grid.style.display='none';
-    cnt.style.display='none';
-    empty.style.display='none';
+    list.style.display='none';
+    home.classList.remove('hide');
     grid.innerHTML='';
     return;
   }
-  grid.style.display='';
-  cnt.style.display='';
+  home.classList.add('hide');
+  list.style.display='block';
+  var title = searchQuery
+    ? 'نتائج البحث: "'+searchQuery+'"'
+    : (BABS[activeBabIdx] || '').replace(/^[^:]+:\s*/,'');
+  document.getElementById('listTitle').innerText = title;
   var h='';
   filtered.forEach(function(q,i){
     h+='<div class="card" onclick="show('+i+')"><div class="cbab">'+BABS[q.babIdx]+'</div><div class="cnum">السؤال '+q.num+'</div><div class="ctitle">'+q.title+'</div><div class="carr">←</div></div>';
@@ -329,6 +341,17 @@ function render(){
     var cards=document.querySelectorAll('.card');
     cards.forEach(function(c,i){setTimeout(function(){c.classList.add('vis')},i*30)});
   },50);
+}
+
+function closeList(){
+  activeBabIdx=null;
+  searchQuery='';
+  document.getElementById('searchInp').value='';
+  document.getElementById('searchClear').style.display='none';
+  document.getElementById('searchIcon').style.display='block';
+  document.querySelectorAll('.btab').forEach(function(b){b.classList.remove('on')});
+  applyFilters();
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
 function show(idx){
@@ -344,17 +367,26 @@ function show(idx){
     img.onclick=function(){openLb(this.src);};
   });
   document.getElementById('home').classList.add('hide');
+  document.getElementById('listView').style.display='none';
   document.getElementById('article').classList.add('on');
   window.scrollTo(0,0);
   updateNav();
 }
 
 function goHome(){
-  document.getElementById('home').classList.remove('hide');
   document.getElementById('article').classList.remove('on');
   document.getElementById('xotimaArticle').style.display='none';
   document.getElementById('kutubArticle').style.display='none';
   document.getElementById('prog').style.width='0';
+  // Return to listView if a filter/search is active, else to home
+  if(activeBabIdx!==null || searchQuery){
+    document.getElementById('home').classList.add('hide');
+    document.getElementById('listView').style.display='block';
+  }else{
+    document.getElementById('home').classList.remove('hide');
+    document.getElementById('listView').style.display='none';
+  }
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
 function nav(dir){
