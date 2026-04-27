@@ -414,9 +414,9 @@ window.onscroll=function(){
 
 
 var bh='<button class="btab" onclick="openMuq(this)">المقدمة</button>';
-bh+='<button class="btab" onclick="openXotima(this)">الخاتمة</button>';
 bh+='<button class="btab" onclick="openKutub(this)">كتب أوصي بها</button>';
 BABS.forEach(function(b,i){var label=b.replace(/^[^:]+:\s*/,'');bh+='<button class="btab" onclick="filterBab('+i+', this)">'+label+'</button>'});
+bh+='<button class="btab" onclick="openXotima(this)">الخاتمة</button>';
 document.getElementById('brow').innerHTML=bh;
 
 function filterBab(idx, el){
