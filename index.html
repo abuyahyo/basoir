@@ -371,7 +371,7 @@ function render(){
 
   var h='';
   filtered.forEach(function(q,i){
-    h+='<div class="card" onclick="show('+i+')"><div class="cbab">'+BABS[q.babIdx]+'</div><div class="cnum">السؤال '+q.num+'</div><div class="ctitle">'+q.title+'</div></div>';
+    h+='<div class="card" onclick="show('+i+')"><div class="cbab">'+BABS[q.babIdx].replace(/^[^:]+:\s*/,'')+'</div><div class="cnum">السؤال '+q.num+'</div><div class="ctitle">'+q.title+'</div></div>';
   });
   grid.innerHTML=h;
   cnt.innerText=filtered.length+' موضوع';
@@ -417,7 +417,7 @@ function show(idx){
   cur=idx;
   var q=filtered[idx];
   if(!q) return;
-  document.getElementById('abab').innerText=BABS[q.babIdx];
+  document.getElementById('abab').innerText=BABS[q.babIdx].replace(/^[^:]+:\s*/,'');
   document.getElementById('anum').innerText='السؤال '+q.num;
   document.getElementById('atitle').innerText=q.title;
   document.getElementById('abody').innerHTML=q.bodyHtml;
