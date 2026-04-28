@@ -438,7 +438,13 @@ function goHome(){
   document.getElementById('xotimaArticle').style.display='none';
   document.getElementById('kutubArticle').style.display='none';
   document.getElementById('prog').style.width='0';
-  // Restore the right view based on current filters
+  activeBabIdx=null;
+  activeChapterIdx=null;
+  searchQuery='';
+  document.getElementById('searchInp').value='';
+  document.getElementById('searchClear').style.display='none';
+  document.getElementById('searchIcon').style.display='block';
+  document.querySelectorAll('.btab').forEach(function(b){b.classList.remove('on')});
   applyFilters();
   window.scrollTo({top:0,behavior:'smooth'});
 }
