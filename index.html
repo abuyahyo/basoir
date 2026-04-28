@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>بصائر</title>
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=2">
+<link rel="apple-touch-icon" sizes="167x167" href="apple-touch-icon.png?v=2">
+<link rel="apple-touch-icon" sizes="152x152" href="apple-touch-icon.png?v=2">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=2">
+<link rel="icon" type="image/png" sizes="180x180" href="apple-touch-icon.png?v=2">
+<link rel="shortcut icon" href="apple-touch-icon.png?v=2">
+<meta name="apple-mobile-web-app-title" content="بصائر">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Serif+Arabic:wght@300;400;700;900&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -78,8 +86,6 @@ body.light-theme .logo{animation:glow-light 5s ease-in-out infinite}
 .cnum{font-size:11px;color:var(--muted);margin-bottom:6px}
 .ctitle{font-family:"Noto Serif Arabic",serif;font-size:15px;font-weight:700;color:var(--txt);line-height:1.6;transition:color .2s}
 .card:hover .ctitle{color:var(--gold)}
-.carr{margin-top:14px;font-size:17px;color:var(--goldd);text-align:left;transition:color .2s,transform .2s;display:block}
-.card:hover .carr{color:var(--gold);transform:translateX(-5px)}
 #article{display:none;position:relative;z-index:1}#article.on{display:block}#home.hide{display:none}
 .ahdr{max-width:760px;margin:0 auto;padding:24px 28px 0}
 .back{display:inline-flex;align-items:center;gap:8px;font-size:14px;color:var(--gold);cursor:pointer;border:1.5px solid rgba(201,168,76,.4);background:rgba(201,168,76,.06);padding:8px 20px;border-radius:24px;font-family:"Noto Naskh Arabic",serif;transition:all .2s;margin-bottom:24px}
@@ -181,7 +187,7 @@ footer{position:relative;z-index:1;text-align:center;padding:20px;border-top:1px
 
 <div id="chapterView" style="display:none;position:relative;z-index:1">
   <div class="ahdr">
-    <button class="back" onclick="closeChapter()">&#8592; العودة إلى القائمة</button>
+    <button class="back" onclick="closeChapter()">العودة إلى القائمة</button>
     <h2 class="atitle" id="chapterViewTitle"></h2>
   </div>
   <div class="bab-row" id="chapterRow"></div>
@@ -189,7 +195,7 @@ footer{position:relative;z-index:1;text-align:center;padding:20px;border-top:1px
 
 <div id="listView" style="display:none;position:relative;z-index:1">
   <div class="ahdr">
-    <button class="back" onclick="closeList()">&#8592; العودة إلى القائمة</button>
+    <button class="back" onclick="closeList()">العودة إلى القائمة</button>
     <h2 class="atitle" id="listTitle"></h2>
   </div>
   <div class="cnt" id="cnt"></div>
@@ -202,7 +208,7 @@ footer{position:relative;z-index:1;text-align:center;padding:20px;border-top:1px
 
 <div id="muqArticle" style="display:none;position:relative;z-index:1">
   <div class="ahdr">
-    <button class="back" onclick="closeMuq()">&#8592; العودة إلى القائمة</button>
+    <button class="back" onclick="closeMuq()">العودة إلى القائمة</button>
     <h2 style="font-family:'Noto Serif Arabic',serif;font-size:clamp(20px,3.6vw,33px);font-weight:900;color:var(--txt);padding-bottom:22px;position:relative;text-align:right">مقدمة المؤلف<span style="display:block;margin-top:8px;height:2px;background:linear-gradient(90deg,var(--gold),transparent)"></span></h2>
   </div>
   <div class="abody">
@@ -225,7 +231,7 @@ footer{position:relative;z-index:1;text-align:center;padding:20px;border-top:1px
 </div>
 <div id="article">
   <div class="ahdr">
-    <button class="back" onclick="goHome()">&#8592; العودة إلى القائمة</button>
+    <button class="back" onclick="goHome()">العودة إلى القائمة</button>
     <div class="meta-row">
       <div class="abab" id="abab"></div>
       <div class="anum" id="anum"></div>
@@ -241,7 +247,7 @@ footer{position:relative;z-index:1;text-align:center;padding:20px;border-top:1px
 
 <div id="xotimaArticle" style="display:none;position:relative;z-index:1">
   <div class="ahdr">
-    <button class="back" onclick="closeExtra('xotimaArticle')">&#8592; العودة إلى القائمة</button>
+    <button class="back" onclick="closeExtra('xotimaArticle')">العودة إلى القائمة</button>
     <h2 style="font-family:'Noto Serif Arabic',serif;font-size:clamp(20px,3.6vw,33px);font-weight:900;color:var(--txt);padding-bottom:4px;text-align:right">
       الخاتمة
       <span style="display:block;margin-top:8px;height:2px;background:linear-gradient(90deg,var(--gold),transparent)"></span>
@@ -252,7 +258,7 @@ footer{position:relative;z-index:1;text-align:center;padding:20px;border-top:1px
 
 <div id="kutubArticle" style="display:none;position:relative;z-index:1">
   <div class="ahdr">
-    <button class="back" onclick="closeExtra('kutubArticle')">&#8592; العودة إلى القائمة</button>
+    <button class="back" onclick="closeExtra('kutubArticle')">العودة إلى القائمة</button>
     <h2 style="font-family:'Noto Serif Arabic',serif;font-size:clamp(20px,3.6vw,33px);font-weight:900;color:var(--txt);padding-bottom:4px;text-align:right">
       كتب أوصي بها
       <span style="display:block;margin-top:8px;height:2px;background:linear-gradient(90deg,var(--gold),transparent)"></span>
@@ -365,7 +371,7 @@ function render(){
 
   var h='';
   filtered.forEach(function(q,i){
-    h+='<div class="card" onclick="show('+i+')"><div class="cbab">'+BABS[q.babIdx]+'</div><div class="cnum">السؤال '+q.num+'</div><div class="ctitle">'+q.title+'</div><div class="carr">←</div></div>';
+    h+='<div class="card" onclick="show('+i+')"><div class="cbab">'+BABS[q.babIdx]+'</div><div class="cnum">السؤال '+q.num+'</div><div class="ctitle">'+q.title+'</div></div>';
   });
   grid.innerHTML=h;
   cnt.innerText=filtered.length+' موضوع';
