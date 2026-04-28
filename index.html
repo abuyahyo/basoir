@@ -86,8 +86,6 @@ body.light-theme .logo{animation:glow-light 5s ease-in-out infinite}
 .cnum{font-size:11px;color:var(--muted);margin-bottom:6px}
 .ctitle{font-family:"Noto Serif Arabic",serif;font-size:15px;font-weight:700;color:var(--txt);line-height:1.6;transition:color .2s}
 .card:hover .ctitle{color:var(--gold)}
-.carr{margin-top:14px;font-size:17px;color:var(--goldd);text-align:left;transition:color .2s,transform .2s;display:block}
-.card:hover .carr{color:var(--gold);transform:translateX(-5px)}
 #article{display:none;position:relative;z-index:1}#article.on{display:block}#home.hide{display:none}
 .ahdr{max-width:760px;margin:0 auto;padding:24px 28px 0}
 .back{display:inline-flex;align-items:center;gap:8px;font-size:14px;color:var(--gold);cursor:pointer;border:1.5px solid rgba(201,168,76,.4);background:rgba(201,168,76,.06);padding:8px 20px;border-radius:24px;font-family:"Noto Naskh Arabic",serif;transition:all .2s;margin-bottom:24px}
@@ -373,7 +371,7 @@ function render(){
 
   var h='';
   filtered.forEach(function(q,i){
-    h+='<div class="card" onclick="show('+i+')"><div class="cbab">'+BABS[q.babIdx]+'</div><div class="cnum">السؤال '+q.num+'</div><div class="ctitle">'+q.title+'</div><div class="carr">←</div></div>';
+    h+='<div class="card" onclick="show('+i+')"><div class="cbab">'+BABS[q.babIdx]+'</div><div class="cnum">السؤال '+q.num+'</div><div class="ctitle">'+q.title+'</div></div>';
   });
   grid.innerHTML=h;
   cnt.innerText=filtered.length+' موضوع';
