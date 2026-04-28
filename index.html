@@ -91,7 +91,8 @@ body.light-theme .logo{animation:glow-light 5s ease-in-out infinite}
 .back{display:inline-flex;align-items:center;gap:8px;font-size:14px;color:var(--gold);cursor:pointer;border:1.5px solid rgba(201,168,76,.4);background:rgba(201,168,76,.06);padding:8px 20px;border-radius:24px;font-family:"Noto Naskh Arabic",serif;transition:all .2s;margin-bottom:24px}
 .back:hover{color:var(--goldl);border-color:var(--gold);background:rgba(201,168,76,.12)}
 .meta-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:16px}
-.abab{font-size:12px;color:var(--gold);font-weight:600;display:inline-block;padding:4px 14px;border-radius:16px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.3);margin:0}
+.abab{font-size:12px;color:var(--gold);font-weight:600;display:inline-block;padding:4px 14px;border-radius:16px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.3);margin:0;cursor:pointer;transition:background .2s,border-color .2s}
+.abab:hover{background:rgba(201,168,76,.2);border-color:var(--gold)}
 .anum{font-size:12px;color:var(--muted);font-weight:600;display:inline-block;padding:4px 14px;border-radius:16px;background:var(--surf2);border:1px solid var(--border);margin:0}
 .atitle{font-family:"Noto Serif Arabic",serif;font-size:clamp(20px,3.6vw,33px);font-weight:900;line-height:1.45;color:var(--txt);padding-bottom:22px;border-bottom:1px solid var(--border)}
 .abody{max-width:760px;margin:0 auto;padding:0 28px 72px;min-height:200px}
@@ -417,7 +418,9 @@ function show(idx){
   cur=idx;
   var q=filtered[idx];
   if(!q) return;
-  document.getElementById('abab').innerText=BABS[q.babIdx].replace(/^[^:]+:\s*/,'');
+  var ababEl=document.getElementById('abab');
+  ababEl.innerText=BABS[q.babIdx].replace(/^[^:]+:\s*/,'');
+  ababEl.onclick=function(){openBab(q.babIdx)};
   document.getElementById('anum').innerText='السؤال '+q.num;
   document.getElementById('atitle').innerText=q.title;
   document.getElementById('abody').innerHTML=q.bodyHtml;
@@ -478,6 +481,22 @@ bh+='<button class="btab" onclick="openKutub(this)">كتب أوصي بها</butt
 BABS.forEach(function(b,i){var label=b.replace(/^[^:]+:\s*/,'');bh+='<button class="btab" onclick="filterBab('+i+', this)">'+label+'</button>'});
 bh+='<button class="btab" onclick="openXotima(this)">الخاتمة</button>';
 document.getElementById('brow').innerHTML=bh;
+
+function openBab(idx){
+  document.getElementById('article').classList.remove('on');
+  document.getElementById('xotimaArticle').style.display='none';
+  document.getElementById('kutubArticle').style.display='none';
+  document.getElementById('prog').style.width='0';
+  activeBabIdx=idx;
+  activeChapterIdx=null;
+  searchQuery='';
+  document.getElementById('searchInp').value='';
+  document.getElementById('searchClear').style.display='none';
+  document.getElementById('searchIcon').style.display='block';
+  document.querySelectorAll('#brow .btab').forEach(function(b,i){b.classList.toggle('on', i===idx)});
+  applyFilters();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
 
 function filterBab(idx, el){
   var isOff=el.classList.contains('on');
