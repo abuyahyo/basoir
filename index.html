@@ -372,8 +372,10 @@ function render(){
   document.getElementById('listTitle').innerText = title;
 
   var h='';
+  var showBab = !!searchQuery;
   filtered.forEach(function(q,i){
-    h+='<div class="card" onclick="show('+i+')"><div class="cbab">'+BABS[q.babIdx].replace(/^[^:]+:\s*/,'')+'</div><div class="cnum">السؤال '+q.num+'</div><div class="ctitle">'+q.title+'</div></div>';
+    var babHtml = showBab ? '<div class="cbab">'+BABS[q.babIdx].replace(/^[^:]+:\s*/,'')+'</div>' : '';
+    h+='<div class="card" onclick="show('+i+')">'+babHtml+'<div class="cnum">السؤال '+q.num+'</div><div class="ctitle">'+q.title+'</div></div>';
   });
   grid.innerHTML=h;
   cnt.innerText=filtered.length+' موضوع';
