@@ -156,6 +156,12 @@ footer{position:relative;z-index:1;text-align:center;padding:20px;border-top:1px
     border-color: var(--gold);
 }
 
+.loading-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:64px 20px;gap:18px;font-family:"Noto Naskh Arabic",serif}
+.loading-spinner{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .85s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{color:var(--muted);font-size:15px;letter-spacing:.03em}
+.loading-error{color:var(--gold);font-size:15px;padding:24px;text-align:center;line-height:1.9;font-family:"Noto Naskh Arabic",serif}
+
 @media(max-width:580px){.grid{grid-template-columns:1fr;padding:10px 12px 48px}.ahdr,.abody,.anav{padding-right:14px;padding-left:14px}.search-wrap{margin:0 12px}.controls{padding:16px 12px 8px}.anav{flex-direction:column;gap:8px}.nbtn{max-width:100%}@media(min-width:581px) and (max-width:900px){.grid{grid-template-columns:repeat(2,1fr);gap:12px}.abody p{font-size:17px}.atitle{font-size:clamp(18px,3vw,26px)}}
 @media(min-width:1400px){.grid{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}.abody p{font-size:19px;line-height:2.3}}
 </style>
@@ -184,6 +190,10 @@ footer{position:relative;z-index:1;text-align:center;padding:20px;border-top:1px
       <button class="search-clear" id="searchClear" onclick="clearSearch()">✕</button>
     </div>
     <div class="bab-row" id="brow"></div>
+    <div class="loading-state" id="loadingState" aria-live="polite">
+      <div class="loading-spinner" aria-hidden="true"></div>
+      <div class="loading-text">جارٍ التحميل…</div>
+    </div>
   </div>
 </div>
 
@@ -511,6 +521,14 @@ function filterBab(idx, el){
   applyFilters();
 }
 
+function hideLoading(){
+  var el=document.getElementById('loadingState');
+  if(el) el.style.display='none';
+}
+function showLoadError(){
+  var el=document.getElementById('loadingState');
+  if(el) el.innerHTML='<div class="loading-error">تعذّر تحميل البيانات.<br>يُرجى إعادة تحميل الصفحة.</div>';
+}
 function loadData(){
   return fetch('data.json',{cache:'force-cache'})
     .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
@@ -520,10 +538,11 @@ function loadData(){
       filtered=QS;
       buildBabRow();
       render();
+      hideLoading();
     })
     .catch(function(e){
       console.error('Failed to load data.json',e);
-      document.getElementById('brow').innerHTML='<div style="color:var(--gold);padding:20px;text-align:center;font-size:14px">تعذّر تحميل البيانات. حاول إعادة تحميل الصفحة.</div>';
+      showLoadError();
     });
 }
 loadData();
