@@ -62,7 +62,14 @@ body.light-theme .logo{animation:glow-light 5s ease-in-out infinite}
 .btab::after{content:"";position:absolute;top:0;right:0;width:3px;height:0;background:var(--gold);transition:height .28s;border-radius:0 8px 0 0}
 .btab:hover,.btab.on{border-color:rgba(201,168,76,.32);background:var(--surf2);color:var(--gold);box-shadow:var(--sh)}
 .btab:hover::after,.btab.on::after{height:100%}
-@media(max-width:580px){.btab{padding:16px 14px;font-size:14px;min-height:56px}}
+.btab-part{flex-direction:column;align-items:stretch;justify-content:flex-start;text-align:right;padding:20px 22px;gap:8px;min-height:92px}
+.btab-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.btab-title{font-family:"Noto Serif Arabic",serif;font-size:19px;font-weight:700;color:var(--gold);line-height:1.3}
+.btab-count{font-size:12px;color:var(--muted);background:rgba(201,168,76,.08);border:1px solid var(--border);padding:3px 12px;border-radius:14px;font-weight:600;letter-spacing:.02em;white-space:nowrap;transition:color .2s,border-color .2s,background .2s}
+.btab-desc{font-size:14px;color:var(--txt);font-weight:500;line-height:1.65;opacity:.82;transition:opacity .2s,color .2s}
+.btab-part:hover .btab-desc,.btab-part.on .btab-desc{opacity:1}
+.btab-part:hover .btab-count,.btab-part.on .btab-count{border-color:rgba(201,168,76,.4);background:rgba(201,168,76,.14);color:var(--gold)}
+@media(max-width:580px){.btab{padding:16px 14px;font-size:14px;min-height:56px}.btab-part{padding:16px 16px;min-height:auto}.btab-title{font-size:17px}.btab-desc{font-size:13px}}
 
 
 .cnt{text-align:center;font-size:11px;color:var(--muted);margin-top:10px;letter-spacing:.06em}
@@ -484,10 +491,25 @@ window.onscroll=function(){
 
 
 
+function toArabicDigits(n){return String(n).replace(/\d/g,function(d){return '٠١٢٣٤٥٦٧٨٩'[d];});}
+function countBab(idx){var c=0;for(var i=0;i<QS.length;i++) if(QS[i].babIdx===idx) c++; return c;}
+function escAttr(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function buildBabRow(){
   var bh='<button class="btab" onclick="openMuq(this)">المقدمة</button>';
   bh+='<button class="btab" onclick="openKutub(this)">كتب أوصي بها</button>';
-  BABS.forEach(function(b,i){var label=b.replace(/^[^:]+:\s*/,'');bh+='<button class="btab" onclick="filterBab('+i+', this)">'+label+'</button>'});
+  BABS.forEach(function(b,i){
+    var parts=b.split(/:\s*/);
+    var head=parts[0]||b;
+    var desc=parts.slice(1).join(': ');
+    var n=countBab(i);
+    bh+='<button class="btab btab-part" onclick="filterBab('+i+', this)">'
+      +'<div class="btab-head">'
+      +  '<span class="btab-title">'+escAttr(head)+'</span>'
+      +  '<span class="btab-count">'+toArabicDigits(n)+' سؤال</span>'
+      +'</div>'
+      +(desc?'<div class="btab-desc">'+escAttr(desc)+'</div>':'')
+      +'</button>';
+  });
   bh+='<button class="btab" onclick="openXotima(this)">الخاتمة</button>';
   document.getElementById('brow').innerHTML=bh;
 }
