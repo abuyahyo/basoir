@@ -314,14 +314,17 @@ themeToggle.addEventListener('click', () => {
 // Re-implementing the core logic to ensure it works with the new theme toggle
 var cur=null, filtered=[], activeBabIdx=null, activeChapterIdx=null, searchQuery='';
 
+var searchTimer=null;
 function onSearch(val){
   searchQuery=val.trim();
   document.getElementById('searchClear').style.display=searchQuery?'block':'none';
   document.getElementById('searchIcon').style.display=searchQuery?'none':'block';
-  applyFilters();
+  clearTimeout(searchTimer);
+  searchTimer=setTimeout(applyFilters,150);
 }
 
 function clearSearch(){
+  clearTimeout(searchTimer);
   document.getElementById('searchInp').value='';
   searchQuery='';
   document.getElementById('searchClear').style.display='none';
@@ -330,6 +333,7 @@ function clearSearch(){
 }
 
 function normAr(s){return (s||'').replace(/[ً-ٰٟ]/g,'').toLowerCase();}
+function stripTags(s){return (s||'').replace(/<[^>]+>/g,' ');}
 function applyFilters(){
   filtered=QS;
   if(activeBabIdx!==null) filtered=filtered.filter(function(q){return q.babIdx===activeBabIdx});
@@ -337,7 +341,7 @@ function applyFilters(){
   if(searchQuery){
     var q=normAr(searchQuery);
     filtered=filtered.filter(function(item){
-      return normAr(item.title).includes(q)||normAr(item.bodyHtml||'').includes(q);
+      return normAr(item.title).includes(q)||normAr(stripTags(item.bodyHtml)).includes(q);
     });
   }
   render();
@@ -388,10 +392,10 @@ function render(){
   var showBab = !!searchQuery;
   filtered.forEach(function(q,i){
     var babHtml = showBab ? '<div class="cbab">'+BABS[q.babIdx].replace(/^[^:]+:\s*/,'')+'</div>' : '';
-    h+='<div class="card" onclick="show('+i+')">'+babHtml+'<div class="cnum">السؤال '+q.num+'</div><div class="ctitle">'+q.title+'</div></div>';
+    h+='<div class="card" onclick="show('+i+')">'+babHtml+'<div class="cnum">السؤال '+toArabicDigits(q.num)+'</div><div class="ctitle">'+q.title+'</div></div>';
   });
   grid.innerHTML=h;
-  cnt.innerText=filtered.length+' موضوع';
+  cnt.innerText=toArabicDigits(filtered.length)+' موضوع';
   empty.style.display=filtered.length===0?'block':'none';
   setTimeout(function(){
     var cards=document.querySelectorAll('.card');
@@ -437,7 +441,7 @@ function show(idx){
   var ababEl=document.getElementById('abab');
   ababEl.innerText=BABS[q.babIdx].replace(/^[^:]+:\s*/,'');
   ababEl.onclick=function(){openBab(q.babIdx)};
-  document.getElementById('anum').innerText='السؤال '+q.num;
+  document.getElementById('anum').innerText='السؤال '+toArabicDigits(q.num);
   document.getElementById('atitle').innerText=q.title;
   document.getElementById('abody').innerHTML=q.bodyHtml;
   document.getElementById('abody').querySelectorAll('img').forEach(function(img){
