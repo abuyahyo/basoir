@@ -1,0 +1,33 @@
+{
+  "name": "بصائر — د. طلعت هيثم",
+  "short_name": "بصائر",
+  "description": "أكبر مشروع فكري في نقد الإلحاد وبيان بعض أدلة صحة الإسلام",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#0d0b08",
+  "background_color": "#0d0b08",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
