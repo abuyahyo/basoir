@@ -112,6 +112,12 @@ body.light-theme .logo{animation:glow-light 5s ease-in-out infinite}
 .abody .qr{background:linear-gradient(135deg,rgba(201,168,76,.09),rgba(201,168,76,.02));border-right:3px solid var(--gold);border-radius:0 6px 6px 0;padding:16px 20px;margin:26px 0;font-size:18px;font-family:"Noto Serif Arabic",serif;color:var(--goldl);line-height:2.1;text-align:center}
 .abody .cit{color:var(--txt);font-size:16px;padding:14px 20px;border-right:3px solid var(--green);margin:18px 0;line-height:2}
 .prog{position:fixed;top:0;right:0;height:2px;width:0;background:linear-gradient(90deg,var(--gold),var(--goldl));z-index:999;transition:width .07s linear}
+.copy-wrap{max-width:760px;margin:0 auto;padding:8px 28px 0;display:flex;justify-content:flex-start}
+.copy-btn{display:inline-flex;align-items:center;gap:8px;padding:9px 18px;background:var(--surf2);border:1px solid rgba(201,168,76,.3);border-radius:999px;color:var(--gold);font-family:"Noto Naskh Arabic",serif;font-size:14px;font-weight:600;cursor:pointer;transition:background .2s,border-color .2s,color .2s}
+.copy-btn:hover{border-color:var(--gold);background:rgba(201,168,76,.1)}
+.copy-btn.done{color:var(--green);border-color:var(--green)}
+body.light-theme .copy-btn.done{color:var(--green)}
+.copy-btn svg{width:16px;height:16px;flex:none}
 .anav{display:flex;justify-content:space-between;gap:10px;max-width:760px;margin:0 auto;padding:22px 28px 64px}
 .nbtn{flex:1;padding:10px 14px;background:var(--surf2);border:1px solid rgba(201,168,76,.3);border-radius:8px;color:var(--txt);font-family:"Noto Naskh Arabic",serif;font-size:15px;cursor:pointer;transition:all .22s;text-align:center;line-height:1.5;max-width:48%}
 .nbtn:hover{border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,.08)}.nbtn:disabled{opacity:.22;cursor:not-allowed}
@@ -275,6 +281,12 @@ body.light-theme .install-banner{box-shadow:0 12px 40px rgba(0,0,0,.16)}
     <h1 class="atitle" id="atitle"></h1>
   </div>
   <div class="abody" id="abody"></div>
+  <div class="copy-wrap">
+    <button class="copy-btn" id="copyBtn" onclick="copyArticle()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+      <span id="copyBtnLabel">نسخ السؤال والجواب</span>
+    </button>
+  </div>
   <div class="anav">
     <button class="nbtn" id="pb" onclick="nav(-1)"><strong>السابق</strong> <span id="pt"></span></button>
     <button class="nbtn" id="nb" onclick="nav(1)"><strong>التالي</strong> <span id="nt"></span></button>
@@ -471,9 +483,51 @@ function show(idx){
   document.getElementById('listView').style.display='none';
   document.getElementById('chapterView').style.display='none';
   document.getElementById('article').classList.add('on');
+  resetCopyBtn();
   window.scrollTo(0,0);
   updateNav();
   pushHistory();
+}
+
+function resetCopyBtn(){
+  var b=document.getElementById('copyBtn');
+  if(!b) return;
+  b.classList.remove('done');
+  document.getElementById('copyBtnLabel').innerText='نسخ السؤال والجواب';
+}
+
+function copyArticle(){
+  var q=filtered[cur];
+  if(!q) return;
+  // Use the rendered body's text so HTML tags, Quran blocks and footnotes
+  // come through as clean readable text (images drop out naturally).
+  var bodyEl=document.getElementById('abody');
+  var bodyText=(bodyEl.innerText||bodyEl.textContent||'').replace(/\n{3,}/g,'\n\n').trim();
+  var text='السؤال '+toArabicDigits(q.num)+': '+q.title+'\n\n'+bodyText;
+  function done(){
+    var b=document.getElementById('copyBtn');
+    if(!b) return;
+    b.classList.add('done');
+    document.getElementById('copyBtnLabel').innerText='تم النسخ ✓';
+    setTimeout(resetCopyBtn,2000);
+  }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done).catch(function(){fallbackCopy(text,done);});
+  } else {
+    fallbackCopy(text,done);
+  }
+}
+
+function fallbackCopy(text,cb){
+  var ta=document.createElement('textarea');
+  ta.value=text;
+  ta.setAttribute('readonly','');
+  ta.style.position='fixed';
+  ta.style.top='-1000px';
+  document.body.appendChild(ta);
+  ta.select();
+  try{ document.execCommand('copy'); if(cb) cb(); }catch(e){}
+  document.body.removeChild(ta);
 }
 
 function goHome(){
