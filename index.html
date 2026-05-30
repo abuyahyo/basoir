@@ -352,6 +352,7 @@ themeToggle.addEventListener('click', () => {
 var cur=null, filtered=[], activeBabIdx=null, activeChapterIdx=null, searchQuery='';
 var auxView=null;      // 'muq' | 'kutub' | 'xotima' | null
 var restoring=false;   // true while applying a popstate, suppresses pushHistory
+var histDepth=0;       // how many entries we've pushed past the initial view
 
 var searchTimer=null;
 function onSearch(val){
@@ -458,14 +459,14 @@ function filterChapter(idx){
 }
 
 function closeList(){
-  history.back();
+  goBack();
 }
 
 function closeChapter(){
-  history.back();
+  goBack();
 }
 
-function show(idx){
+function show(idx, replace){
   cur=idx;
   var q=filtered[idx];
   if(!q) return;
@@ -486,7 +487,10 @@ function show(idx){
   resetCopyBtn();
   window.scrollTo(0,0);
   updateNav();
-  pushHistory();
+  // prev/next replace the current entry so paging through questions stays
+  // one history step; opening from the list pushes a new entry.
+  if(replace) replaceHistory();
+  else pushHistory();
 }
 
 function resetCopyBtn(){
@@ -531,12 +535,12 @@ function fallbackCopy(text,cb){
 }
 
 function goHome(){
-  history.back();
+  goBack();
 }
 
 function nav(dir){
   var n=cur+dir;
-  if(n>=0 && n<filtered.length) show(n);
+  if(n>=0 && n<filtered.length) show(n, true);
 }
 
 function updateNav(){
@@ -570,10 +574,19 @@ function currentState(){
 }
 function pushHistory(){
   if(restoring) return;
+  histDepth++;
   history.pushState(currentState(), '');
 }
 function replaceHistory(){
   history.replaceState(currentState(), '');
+}
+// Go back one app step. Uses real history when we have an entry to pop
+// (so the OS/browser back button stays in sync); otherwise rebuilds the
+// home view directly — covers deep links and installed-PWA launches where
+// there's nothing to pop.
+function goBack(){
+  if(histDepth>0){ history.back(); }
+  else { applyState({view:'list', babIdx:null, chIdx:null, q:''}); replaceHistory(); }
 }
 // Rebuild the UI to match a state object (used on popstate). Mirrors the
 // open* functions but without pushing new history entries.
@@ -609,6 +622,7 @@ function applyState(s){
   restoring=false;
 }
 window.addEventListener('popstate', function(e){
+  if(histDepth>0) histDepth--;
   applyState(e.state || {view:'list', babIdx:null, chIdx:null, q:''});
 });
 
@@ -731,7 +745,7 @@ function openKutub(el){
 }
 
 function closeExtra(id){
-  if(!restoring){ history.back(); return; }
+  if(!restoring){ goBack(); return; }
   document.getElementById(id).style.display='none';
   document.getElementById('home').classList.remove('hide');
   document.querySelectorAll('.btab').forEach(function(b){b.classList.remove('on')});
@@ -765,7 +779,7 @@ function openMuq(el){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 function closeMuq(){
-  if(!restoring){ history.back(); return; }
+  if(!restoring){ goBack(); return; }
   document.getElementById('muqArticle').style.display='none';
   document.getElementById('xotimaArticle').style.display='none';
   document.getElementById('kutubArticle').style.display='none';
