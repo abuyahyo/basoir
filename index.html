@@ -12,6 +12,9 @@
 <link rel="shortcut icon" href="apple-touch-icon.png?v=2">
 <meta name="apple-mobile-web-app-title" content="بصائر">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#fdfcf8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d0b08" media="(prefers-color-scheme: dark)">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Serif+Arabic:wght@300;400;700;900&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -170,6 +173,21 @@ footer{position:relative;z-index:1;text-align:center;padding:20px;border-top:1px
 .loading-text{color:var(--muted);font-size:15px;letter-spacing:.03em}
 .loading-error{color:var(--gold);font-size:15px;padding:24px;text-align:center;line-height:1.9;font-family:"Noto Naskh Arabic",serif}
 
+/* PWA install banner */
+.install-banner{position:fixed;bottom:16px;left:16px;right:16px;max-width:480px;margin:0 auto;z-index:1001;display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--surf);border:1px solid var(--border);border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.45);font-family:"Noto Naskh Arabic",serif;animation:slide-up .4s ease}
+body.light-theme .install-banner{box-shadow:0 12px 40px rgba(0,0,0,.16)}
+@keyframes slide-up{from{transform:translateY(120%)}to{transform:translateY(0)}}
+.install-banner-icon{width:44px;height:44px;border-radius:10px;flex:none;border:1px solid var(--border)}
+.install-banner-text{flex:1;min-width:0}
+.install-banner-text strong{display:block;font-family:"Noto Serif Arabic",serif;font-size:15px;font-weight:700;color:var(--txt);line-height:1.4}
+.install-banner-text p{font-size:12.5px;color:var(--muted);line-height:1.6;margin:2px 0 0}
+#install-banner-action{flex:none;padding:9px 20px;background:var(--gold);color:var(--bg);border:none;border-radius:999px;font-family:"Noto Naskh Arabic",serif;font-size:14px;font-weight:700;cursor:pointer;transition:background .2s,transform .15s}
+#install-banner-action:hover{background:var(--goldl);transform:translateY(-1px)}
+#install-banner-close{flex:none;background:none;border:none;color:var(--muted);font-size:16px;line-height:1;cursor:pointer;padding:6px;border-radius:8px;transition:color .2s,background .2s}
+#install-banner-close:hover{color:var(--gold);background:rgba(201,168,76,.1)}
+.install-banner[hidden]{display:none}
+@media(max-width:480px){.install-banner{gap:10px;padding:12px 12px;bottom:12px;left:12px;right:12px}.install-banner-icon{width:38px;height:38px}.install-banner-text strong{font-size:14px}.install-banner-text p{font-size:11.5px}#install-banner-action{padding:8px 16px;font-size:13px}}
+
 @media(max-width:580px){.grid{grid-template-columns:1fr;padding:10px 12px 48px}.ahdr,.abody,.anav{padding-right:14px;padding-left:14px}.search-wrap{margin:0 12px}.controls{padding:16px 12px 8px}.anav{flex-direction:column;gap:8px}.nbtn{max-width:100%}@media(min-width:581px) and (max-width:900px){.grid{grid-template-columns:repeat(2,1fr);gap:12px}.abody p{font-size:17px}.atitle{font-size:clamp(18px,3vw,26px)}}
 @media(min-width:1400px){.grid{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}.abody p{font-size:19px;line-height:2.3}}
 </style>
@@ -288,6 +306,17 @@ footer{position:relative;z-index:1;text-align:center;padding:20px;border-top:1px
 </div>
 
 <footer>بصائر &#8212; د. طلعت هيثم</footer>
+
+<div class="install-banner" id="install-banner" hidden>
+  <img src="icon-192.png" alt="" class="install-banner-icon">
+  <div class="install-banner-text">
+    <strong>ثبِّت التطبيق</strong>
+    <p>ثبِّت بصائر على جهازك — يعمل دون اتصال بالإنترنت.</p>
+  </div>
+  <button id="install-banner-action">تثبيت</button>
+  <button id="install-banner-close" aria-label="إغلاق">&#10005;</button>
+</div>
+
 <script>
 var BABS=[], CHAPTERS=[], QS=[], KUTUB_HTML='', XOTIMA_HTML='';
 
@@ -644,6 +673,58 @@ function closeMuq(){
   document.querySelectorAll('.btab').forEach(function(b){b.classList.remove('on')});
   window.scrollTo({top:0,behavior:'smooth'});
 }
+
+// PWA: service worker registration + install banner
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('sw.js').catch(function(e){
+      console.warn('SW registration failed', e);
+    });
+  });
+}
+
+var INSTALL_DISMISS_KEY = 'basaair_install_dismissed_at';
+var INSTALL_DISMISS_TTL = 14 * 24 * 60 * 60 * 1000;
+var deferredInstallPrompt = null;
+var installBanner = document.getElementById('install-banner');
+var installAction = document.getElementById('install-banner-action');
+var installClose = document.getElementById('install-banner-close');
+
+function isInstallDismissed(){
+  var t = Number(localStorage.getItem(INSTALL_DISMISS_KEY) || 0);
+  return t && (Date.now() - t < INSTALL_DISMISS_TTL);
+}
+function isStandalone(){
+  return window.matchMedia('(display-mode: standalone)').matches
+    || window.navigator.standalone === true;
+}
+function showInstallBanner(){
+  if (!installBanner || isStandalone() || isInstallDismissed()) return;
+  installBanner.hidden = false;
+}
+function hideInstallBanner(){ if (installBanner) installBanner.hidden = true; }
+
+window.addEventListener('beforeinstallprompt', function(e){
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  showInstallBanner();
+});
+window.addEventListener('appinstalled', function(){
+  deferredInstallPrompt = null;
+  hideInstallBanner();
+});
+if (installAction) installAction.addEventListener('click', function(){
+  if (!deferredInstallPrompt) { hideInstallBanner(); return; }
+  hideInstallBanner();
+  try {
+    deferredInstallPrompt.prompt();
+    deferredInstallPrompt.userChoice.then(function(){ deferredInstallPrompt = null; });
+  } catch(e) { deferredInstallPrompt = null; }
+});
+if (installClose) installClose.addEventListener('click', function(){
+  localStorage.setItem(INSTALL_DISMISS_KEY, String(Date.now()));
+  hideInstallBanner();
+});
 </script>
 </body>
 </html>
