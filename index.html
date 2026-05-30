@@ -342,6 +342,8 @@ themeToggle.addEventListener('click', () => {
 
 // Re-implementing the core logic to ensure it works with the new theme toggle
 var cur=null, filtered=[], activeBabIdx=null, activeChapterIdx=null, searchQuery='';
+var auxView=null;      // 'muq' | 'kutub' | 'xotima' | null
+var restoring=false;   // true while applying a popstate, suppresses pushHistory
 
 var searchTimer=null;
 function onSearch(val){
@@ -349,7 +351,14 @@ function onSearch(val){
   document.getElementById('searchClear').style.display=searchQuery?'block':'none';
   document.getElementById('searchIcon').style.display=searchQuery?'none':'block';
   clearTimeout(searchTimer);
-  searchTimer=setTimeout(applyFilters,150);
+  searchTimer=setTimeout(function(){
+    applyFilters();
+    // Keep one history entry for "in search"; refine in place so back
+    // leaves search rather than undoing it keystroke by keystroke.
+    var st=history.state;
+    if(searchQuery && !(st && st.view==='list' && st.q)) pushHistory();
+    else replaceHistory();
+  },150);
 }
 
 function clearSearch(){
@@ -359,6 +368,7 @@ function clearSearch(){
   document.getElementById('searchClear').style.display='none';
   document.getElementById('searchIcon').style.display='block';
   applyFilters();
+  replaceHistory();
 }
 
 function normAr(s){return (s||'').replace(/[ً-ٰٟ]/g,'').toLowerCase();}
@@ -435,32 +445,16 @@ function render(){
 function filterChapter(idx){
   activeChapterIdx = idx;
   applyFilters();
+  pushHistory();
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
 function closeList(){
-  if(activeChapterIdx !== null){
-    activeChapterIdx = null;
-    applyFilters();
-  } else {
-    activeBabIdx=null;
-    activeChapterIdx=null;
-    searchQuery='';
-    document.getElementById('searchInp').value='';
-    document.getElementById('searchClear').style.display='none';
-    document.getElementById('searchIcon').style.display='block';
-    document.querySelectorAll('.btab').forEach(function(b){b.classList.remove('on')});
-    applyFilters();
-  }
-  window.scrollTo({top:0,behavior:'smooth'});
+  history.back();
 }
 
 function closeChapter(){
-  activeBabIdx=null;
-  activeChapterIdx=null;
-  document.querySelectorAll('.btab').forEach(function(b){b.classList.remove('on')});
-  applyFilters();
-  window.scrollTo({top:0,behavior:'smooth'});
+  history.back();
 }
 
 function show(idx){
@@ -483,22 +477,11 @@ function show(idx){
   document.getElementById('article').classList.add('on');
   window.scrollTo(0,0);
   updateNav();
+  pushHistory();
 }
 
 function goHome(){
-  document.getElementById('article').classList.remove('on');
-  document.getElementById('xotimaArticle').style.display='none';
-  document.getElementById('kutubArticle').style.display='none';
-  document.getElementById('prog').style.width='0';
-  activeBabIdx=null;
-  activeChapterIdx=null;
-  searchQuery='';
-  document.getElementById('searchInp').value='';
-  document.getElementById('searchClear').style.display='none';
-  document.getElementById('searchIcon').style.display='block';
-  document.querySelectorAll('.btab').forEach(function(b){b.classList.remove('on')});
-  applyFilters();
-  window.scrollTo({top:0,behavior:'smooth'});
+  history.back();
 }
 
 function nav(dir){
@@ -524,6 +507,60 @@ window.onscroll=function(){
 };
 
 
+
+// --- History / back-button support ---
+// A view is captured as a plain state object so popstate can restore it.
+function currentState(){
+  if(auxView) return {view:'aux', aux:auxView};
+  if(document.getElementById('article').classList.contains('on')){
+    var q=filtered[cur];
+    return {view:'article', num:q?q.num:null, babIdx:activeBabIdx, chIdx:activeChapterIdx, q:searchQuery};
+  }
+  return {view:'list', babIdx:activeBabIdx, chIdx:activeChapterIdx, q:searchQuery};
+}
+function pushHistory(){
+  if(restoring) return;
+  history.pushState(currentState(), '');
+}
+function replaceHistory(){
+  history.replaceState(currentState(), '');
+}
+// Rebuild the UI to match a state object (used on popstate). Mirrors the
+// open* functions but without pushing new history entries.
+function applyState(s){
+  restoring=true;
+  // close anything that might be open
+  auxView=null;
+  document.getElementById('muqArticle').style.display='none';
+  document.getElementById('xotimaArticle').style.display='none';
+  document.getElementById('kutubArticle').style.display='none';
+  document.getElementById('article').classList.remove('on');
+  document.getElementById('prog').style.width='0';
+
+  if(!s || s.view==='list' || s.view==='article'){
+    activeBabIdx = s && s.babIdx!=null ? s.babIdx : null;
+    activeChapterIdx = s && s.chIdx!=null ? s.chIdx : null;
+    searchQuery = s && s.q ? s.q : '';
+    document.getElementById('searchInp').value = searchQuery;
+    document.getElementById('searchClear').style.display = searchQuery?'block':'none';
+    document.getElementById('searchIcon').style.display = searchQuery?'none':'block';
+    document.querySelectorAll('#brow .btab').forEach(function(b,i){b.classList.toggle('on', i===activeBabIdx)});
+    applyFilters();
+    if(s && s.view==='article' && s.num!=null){
+      var idx=filtered.findIndex(function(q){return q.num===s.num;});
+      if(idx>=0) show(idx);
+    }
+  } else if(s.view==='aux'){
+    document.querySelectorAll('.btab').forEach(function(b){b.classList.remove('on')});
+    if(s.aux==='muq') openMuq(null);
+    else if(s.aux==='kutub') openKutub(null);
+    else if(s.aux==='xotima') openXotima(null);
+  }
+  restoring=false;
+}
+window.addEventListener('popstate', function(e){
+  applyState(e.state || {view:'list', babIdx:null, chIdx:null, q:''});
+});
 
 function toArabicDigits(n){return String(n).replace(/\d/g,function(d){return '٠١٢٣٤٥٦٧٨٩'[d];});}
 function countBab(idx){var c=0;for(var i=0;i<QS.length;i++) if(QS[i].babIdx===idx) c++; return c;}
@@ -561,6 +598,7 @@ function openBab(idx){
   document.getElementById('searchIcon').style.display='block';
   document.querySelectorAll('#brow .btab').forEach(function(b,i){b.classList.toggle('on', i===idx)});
   applyFilters();
+  pushHistory();
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -575,6 +613,7 @@ function filterBab(idx, el){
     activeBabIdx=idx;
   }
   applyFilters();
+  pushHistory();
 }
 
 function hideLoading(){
@@ -595,6 +634,7 @@ function loadData(){
       buildBabRow();
       render();
       hideLoading();
+      replaceHistory();
     })
     .catch(function(e){
       console.error('Failed to load data.json',e);
@@ -617,6 +657,8 @@ function openXotima(el){
   document.getElementById('article').classList.remove('on');
   document.getElementById('kutubArticle').style.display='none';
   document.getElementById('muqArticle').style.display='none';
+  auxView='xotima';
+  pushHistory();
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -633,10 +675,13 @@ function openKutub(el){
   document.getElementById('article').classList.remove('on');
   document.getElementById('xotimaArticle').style.display='none';
   document.getElementById('muqArticle').style.display='none';
+  auxView='kutub';
+  pushHistory();
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
 function closeExtra(id){
+  if(!restoring){ history.back(); return; }
   document.getElementById(id).style.display='none';
   document.getElementById('home').classList.remove('hide');
   document.querySelectorAll('.btab').forEach(function(b){b.classList.remove('on')});
@@ -659,13 +704,18 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLb();})
 
 function openMuq(el){
   document.querySelectorAll('.btab').forEach(function(b){b.classList.remove('on')});
-  el.classList.add('on');
+  if(el) el.classList.add('on');
   document.getElementById('home').classList.add('hide');
   document.getElementById('muqArticle').style.display='block';
+  document.getElementById('xotimaArticle').style.display='none';
+  document.getElementById('kutubArticle').style.display='none';
   document.getElementById('article').classList.remove('on');
+  auxView='muq';
+  pushHistory();
   window.scrollTo({top:0,behavior:'smooth'});
 }
 function closeMuq(){
+  if(!restoring){ history.back(); return; }
   document.getElementById('muqArticle').style.display='none';
   document.getElementById('xotimaArticle').style.display='none';
   document.getElementById('kutubArticle').style.display='none';
