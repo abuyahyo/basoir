@@ -725,9 +725,30 @@ function closeMuq(){
 }
 
 // PWA: service worker registration + install banner
+// When a new worker takes over, reload once so the user gets the updated
+// app without any manual cache-clearing. The reload guard prevents loops.
 if ('serviceWorker' in navigator) {
+  var swRefreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', function(){
+    if (swRefreshing) return;
+    swRefreshing = true;
+    window.location.reload();
+  });
   window.addEventListener('load', function(){
-    navigator.serviceWorker.register('sw.js').catch(function(e){
+    navigator.serviceWorker.register('sw.js').then(function(reg){
+      // If an updated worker is already waiting, activate it immediately.
+      function promote(w){
+        if (!w) return;
+        w.addEventListener('statechange', function(){
+          if (w.state === 'installed' && navigator.serviceWorker.controller) {
+            w.postMessage('SKIP_WAITING');
+          }
+        });
+      }
+      if (reg.waiting && navigator.serviceWorker.controller) reg.waiting.postMessage('SKIP_WAITING');
+      promote(reg.installing);
+      reg.addEventListener('updatefound', function(){ promote(reg.installing); });
+    }).catch(function(e){
       console.warn('SW registration failed', e);
     });
   });
